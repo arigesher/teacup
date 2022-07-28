@@ -2,7 +2,7 @@
 from dataclasses import asdict, dataclass
 import datetime
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 """
 API taken from https://weatherflow.github.io/Tempest/api/udp/v143/
@@ -240,7 +240,7 @@ class StationObservation:
 class TempestState(AirObservation, RapidWind, SkyObservation, StationObservation):
     pass 
 
-    def update(self, new_data: AirObservation | RapidWind | SkyObservation | StationObservation)-> "TempestState":
+    def update(self, new_data: Union[AirObservation, RapidWind, SkyObservation, StationObservation])-> "TempestState":
         tempest_dict = asdict(self)
         tempest_dict.update(asdict(new_data))
         return TempestState(**tempest_dict)
