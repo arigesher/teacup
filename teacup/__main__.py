@@ -13,15 +13,13 @@ from .tempest.messages import get_message_object
 
 LOGFILE_NAME = "teacup-data.log"
 
-def _configure_data_log():
-    log = logging.getLogger("datalog")
-    handler = logging.FileHandler(str(pathlib.Path(LOGFILE_NAME)))
-    handler.setLevel(logging.INFO)
-    handler.setFormatter(logging.Formatter(fmt="%(message)s"))
-    log.addHandler(handler)
-    log.propagate = False 
-    log.setLevel(logging.INFO)
-    return log 
+
+def _write_logline(msg: str):
+    """
+    Appends a newline and writes to the log with open/close for durability.
+    """
+    with pathlib.Path(LOGFILE_NAME).open("a") as f:
+        f.write(msg + "\n")
 
 
 class TempestProtocol(DatagramProtocol):
@@ -29,7 +27,6 @@ class TempestProtocol(DatagramProtocol):
 
     def __init__(self) -> None:
         super().__init__()
-        self.data_log = _configure_data_log()
 
     def datagram_received(self, data: bytes, addr) -> None:
         try:
@@ -49,7 +46,7 @@ class TempestProtocol(DatagramProtocol):
                             "src": addr[0]})
                 msg = json.dumps(data, default=lambda _: int(_.timestamp()))
                 print(msg)
-                self.data_log.info(msg)
+                _write_logline(msg)
             else:
                 print("ERROR got non dataclass response: {}".format(event_object))
 
